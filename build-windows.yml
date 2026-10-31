@@ -1,0 +1,23 @@
+name: Build Windows app
+on:
+  push:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pyinstaller pedalboard sounddevice numpy
+      - run: pyinstaller --noconfirm --onedir --name DX-Arranger --collect-all pedalboard --collect-all sounddevice arranger_app.py
+      - name: Add the panel, helper files and readme
+        shell: pwsh
+        run: |
+          Copy-Item dxarrangernew1.html, bridge.js, Start-DX-Arranger.bat, Start-for-phone.bat, README-WINDOWS.txt dist/DX-Arranger/
+          Compress-Archive -Path dist/DX-Arranger -DestinationPath DX-Arranger-Windows.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: DX-Arranger-Windows
+          path: DX-Arranger-Windows.zip
